@@ -2,6 +2,10 @@
 """ Console Module """
 import cmd
 import sys
+from os import getenv
+import re
+import uuid
+from datetime import datetime
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -94,7 +98,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_quit(self, command):
         """ Method to exit the HBNB console"""
-        exit()
+        exit(0)
 
     def help_quit(self):
         """ Prints the help documentation for quit  """
@@ -103,7 +107,7 @@ class HBNBCommand(cmd.Cmd):
     def do_EOF(self, arg):
         """ Handles EOF to exit program """
         print()
-        exit()
+        exit(0)
 
     def help_EOF(self):
         """ Prints the help documentation for EOF """
@@ -115,26 +119,70 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        try:
-            if not args:
-                raise SyntaxError()
-            my_list = args.split(" ")
-            obj = eval("{}()".format(my_list[0]))
+        bad_attr = ("id", "created_at", "updated_at", "__class__")
+        name_to_match = r"(?p<name>(?:[a-zA-Z]|_)(?:[a-zA-Z]|\d|_)*)"
+        class_nam = ""
 
-            for argv in my_list[1:]:
-                value = argv.split('=')
-                key = value[0]
-                real_value = value[1]
-                spacet = {34: None, 95: 32}
-                real_value = real_value.translate(spacet)
-                setattr(obj, key, real_value)
-            obj.save()
-            print("{}".format(obj.id))
+        matching_class = re.match(name_to_match, args)
+        object_kwargs = {}
+        if matching_class is not None:
+            class_nam = matching_class.group("name")
+            params_send = args[len(class_nam):].strip()
 
-        except SyntaxError:
-            print("** class name missing **")
-        except NameError:
-            print("** class doesn't exist **")
+            params = params_send.split(" ")
+            send_patten = r'(?p<t_str>"([^"]|\")*")'
+
+            float_pattern = r'(?p<t_int>[-+]?\d+)'
+            int_pattern = r'(?p<t_int>[-+]?\d+)'
+            
+            param_pattern = '{}=({}|{}|{})'.format(name_to_match, send_patten,
+                    float_pattern, int_pattern)
+
+            for param in params:
+                param_match = re.fullmatch(param_pattern, param)
+                if param_match is not None:
+                    key_name = param_match.group('name')
+                    str_v = param_match.group('t_str')
+                    float_v = param_match.group('t_float')
+                    int_v = param_match.group('t_int')
+
+                    if float_v is not None:
+                        object_kwargs[key_name] = float(float_t)
+                    if int_v is not None:
+                        object_kwargs[key_name] = int(int_t)
+                    if str_v is not None:
+                        object_kwargs[key_name] = str_v[1:-1].replace('_', ' ')
+            else:
+                class_nam = args
+
+            if not class_nam:
+                print("** class name missing **")
+                return
+            elif class_nam not in HBNBCommmand.classes:
+                print("** class doesn't exist **")
+                return
+
+            if getenv('HBNB_TYPE_STORAGE') == 'db':
+                if not hasattr(object_kwargs, 'id'):
+                    object_kwargs['id'] = str(uuid.uuid4())
+
+                if not hasattr(object_kwargs, 'created_at'):
+                    object_kwargs['created_at'] = str(datetime.now())
+
+                if not hasattr(object_kwargs, 'updated_at'):
+                    object_kwargs['updated_at'] = str(datetime.now())
+
+                new_object = HBNBCommand.classes[class_nam](**object_kwargs)
+
+                new_object.save()
+                print(new_object.id)
+            else:
+                new_object = HBNBCommand.classes[class_nam]()
+                for key, value in object_kwargs.items():
+                    if key not in bad_attr:
+                        setattr(new_object, key, value)
+                new_object.save()
+                print(new_object.id)
 
     def help_create(self):
         """ Help information for the create method """
@@ -216,11 +264,11 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all().items():
                 if k.split('.')[0] == args:
                     print_list.append(str(v))
         else:
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all().items():
                 print_list.append(str(v))
 
         print(print_list)

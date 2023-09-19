@@ -27,7 +27,7 @@ class BaseModel:
         else:
             for c in kwargs:
                 if c in ["created_at", "updated_at"]:
-                    setattr(self, c, kwargs[c])
+                    setattr(self, c, datetime.fromisoformat(kwargs[c]))
                 elif c != "__class__":
                     setattr(self, c, kwargs[c])
             if which_storage == "db":
@@ -55,24 +55,16 @@ class BaseModel:
         dictionary = self.__dict__.copy()
         dictionary["__class__"] = self.__class__.__name__
 
-        modification = {}
-        keys_to_delete = []
-
-        for key, value in dictionary.items():
-            if isinstance(value, datetime):
-                modification[key] = value.isoformat()
-
-            if key == "_sa_instance_state":
-                keys_to_delete.append(key)
-
-        for key in keys_to_delete:
-            del dictionary[key]
-
-        dictionary.update(modification)
+        for key in dictionary:
+            if type(dictionary[key]) is datetime:
+                dictionary[key] = dictionary[key].isformat()
+        if '_sa_instance_state' in dictionary.keys():
+            del (dictionary['_sa_instance_state'])
 
         return dictionary
 
     def delete(self):
         """delete instances from storage"""
+        from models import storage
 
         storage.delete(self)
