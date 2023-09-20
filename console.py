@@ -120,23 +120,23 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, args):
         """ Create an object of any class"""
         bad_attr = ("id", "created_at", "updated_at", "__class__")
-        name_to_match = r'(?p<name>(?:[a-zA-Z]|_)(?:[a-zA-Z]|\d|_)*)'
-        class_nam = ""
+        pattern_name = r'(?P<name>(?:[a-zA-Z]|_)(?:[a-zA-Z]|\d|_)*)'
+        class_name = ""
 
-        matching_class = re.match(name_to_match, args)
+        class_match = re.match(pattern_name, args)
         object_kwargs = {}
-        if matching_class is not None:
-            class_nam = matching_class.group("name")
-            params_send = args[len(class_nam):].strip()
+        if class_match is not None:
+            class_name = class_match.group("name")
+            params_str = args[len(class_name):].strip()
 
-            params = params_send.split(" ")
-            send_patten = r'(?p<t_str>"([^"]|\")*")'
+            params = params_str.split(" ")
+            str_pattern = r'(?P<t_str>"([^"]|\")*")'
 
             float_pattern = r'(?P<t_float>[-+]?\d+\.\d+)'
-            int_pattern = r'(?p<t_int>[-+]?\d+)'
+            int_pattern = r'(?P<t_int>[-+]?\d+)'
 
             param_pattern = '{}=({}|{}|{})'.format(
-                    name_to_match, send_patten,
+                    pattern_name, str_pattern,
                     float_pattern, int_pattern
                     )
 
@@ -149,42 +149,42 @@ class HBNBCommand(cmd.Cmd):
                     int_v = param_match.group('t_int')
 
                     if float_v is not None:
-                        object_kwargs[key_name] = float(float_t)
+                        object_kwargs[key_name] = float(float_v)
                     if int_v is not None:
-                        object_kwargs[key_name] = int(int_t)
+                        object_kwargs[key_name] = int(int_v)
                     if str_v is not None:
                         object_kwargs[key_name] = str_v[1:-1].replace('_', ' ')
-            else:
-                class_nam = args
+        else:
+            class_name = args
 
-            if not class_nam:
-                print("** class name missing **")
-                return
-            elif class_nam not in HBNBCommmand.classes:
-                print("** class doesn't exist **")
-                return
+        if not class_name:
+            print("** class name missing **")
+            return
+        elif class_name not in HBNBCommand.classes:
+            print("** class doesn't exist **")
+            return
 
-            if getenv('HBNB_TYPE_STORAGE') == 'db':
-                if not hasattr(object_kwargs, 'id'):
-                    object_kwargs['id'] = str(uuid.uuid4())
+        if getenv('HBNB_TYPE_STORAGE') == 'db':
+            if not hasattr(object_kwargs, 'id'):
+                object_kwargs['id'] = str(uuid.uuid4())
 
-                if not hasattr(object_kwargs, 'created_at'):
-                    object_kwargs['created_at'] = str(datetime.now())
+            if not hasattr(object_kwargs, 'created_at'):
+                object_kwargs['created_at'] = str(datetime.now())
 
-                if not hasattr(object_kwargs, 'updated_at'):
-                    object_kwargs['updated_at'] = str(datetime.now())
+            if not hasattr(object_kwargs, 'updated_at'):
+                object_kwargs['updated_at'] = str(datetime.now())
 
-                new_object = HBNBCommand.classes[class_nam](**object_kwargs)
+            new_object = HBNBCommand.classes[class_name](**object_kwargs)
 
-                new_object.save()
-                print(new_object.id)
-            else:
-                new_object = HBNBCommand.classes[class_nam]()
-                for key, value in object_kwargs.items():
-                    if key not in bad_attr:
-                        setattr(new_object, key, value)
-                new_object.save()
-                print(new_object.id)
+            new_object.save()
+            print(new_object.id)
+        else:
+            new_object = HBNBCommand.classes[class_name]()
+            for key, value in object_kwargs.items():
+                if key not in bad_attr:
+                    setattr(new_object, key, value)
+            new_object.save()
+            print(new_object.id)
 
     def help_create(self):
         """ Help information for the create method """
