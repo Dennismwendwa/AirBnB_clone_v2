@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 """ State Module for HBNB project """
 from models.base_model import Base
-from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 from os import getenv
@@ -24,7 +23,6 @@ classes = {
         "Review": Review,
         }
 
-
 class DBStorage:
     """ DBStorage class """
     __engine = None
@@ -38,17 +36,17 @@ class DBStorage:
         HBNB_MYSQL_DB = getenv('HBNB_MYSQL_DB')
 
         self.__engine = create_engine(
-                'mysql+mysqldb://{}:{}@{}/{}'
-                .format(HBNB_MYSQL_USER,
-                        HBNB_MYSQL_PWD,
-                        HBNB_MYSQL_HOST,
-                        HBNB_MYSQL_DB),
-                pool_pre_ping=True
-        )
-        HBNB_ENV = getenv('HBNB_ENV')
-       
+            'mysql+mysqldb://{}:{}@{}/{}'.format(
+                                           HBNB_MYSQL_USER,
+                                           HBNB_MYSQL_PWD,
+                                           HBNB_MYSQL_HOST,
+                                           HBNB_MYSQL_DB
+                                        ), pool_pre_ping=True)
+
+
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
+
 
     def all(self, cls=None):
         """making query sets from the current database instances"""
@@ -73,7 +71,7 @@ class DBStorage:
             try:
                 self.__session.add(obj)
                 self.__session.flush()
-                self.__session.reflesh(obj)
+                self.__session.refresh(obj)
 
             except Exception as e:
                 self.__session.rollback()
