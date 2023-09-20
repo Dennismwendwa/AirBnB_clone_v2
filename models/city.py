@@ -9,9 +9,11 @@ from models import which_storage
 class City(BaseModel, Base):
     """ The city class, contains state ID and name """
     __tablename__ = 'cities'
+
     if which_storage == "db":
         name = Column(String(128), nullable=False)
-        state_id = Column(String(60), ForeignKey('state.id'), nullable=False)
+        state_id = Column(String(60), ForeignKey('states.id'), nullable=False)
+        state_r = relationship("State", back_populates="cities")
         places = relationship('Place', backref='cities',
                               cascade='all, delete-orphan')
     else:

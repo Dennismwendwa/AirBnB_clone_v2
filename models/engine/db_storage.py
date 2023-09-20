@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 """ State Module for HBNB project """
 from models.base_model import BaseModel, Base
+from sqlalchemy import create_engine
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, scoped_session
+
 from sqlalchemy import create_engine
-from os import getenv
+import os
 
 from models.user import User
 from models.state import State
@@ -35,10 +37,10 @@ class DBStorage(BaseModel):
         """creates new dbstorage instances"""
         self.__engine = create_engine(
                 'mysql+mysqldb://{}:{}@{}/{}'
-                .format(getenv('HBNB_MYSQL_USER'),
-                        getenv('HBNB_MYSQL_PWD'),
-                        getenv('HBNB_MYSQL_HOST'),
-                        getenv('HBNB_MYSQL_DB')),
+                .format(os.environ.get('HBNB_MYSQL_USER'),
+                        os.environ.get('HBNB_MYSQL_PWD'),
+                        os.environ.get('HBNB_MYSQL_HOST', 'localhost'),
+                        os.environ.get('HBNB_MYSQL_DB')),
                 pool_pre_ping=True
         )
 
@@ -63,25 +65,23 @@ class DBStorage(BaseModel):
         return my_dict
 
     def new(self, obj):
-        """adds new object to database"""
-        if obj is not None:
-            try:
-                self.__session.add(obj)
-                self.__session.flush()
-                self.__session.reflesh(obj)
-            except Exception as e:
-                self.__session.rollback()
-                raise e
+      """adds new object to database"""
+      if obj is not None:
+        try:
+          self.__session.add(obj)
+          self.__session.flush()
+          self.__session.reflesh(obj)
+      except Exception as e:
+        self.__session.rollback()
+        raise e
 
     def save(self):
-        """commits chenges of current session"""
+      """commits chenges of current session"""
         self.__session.commit()
 
     def delete(self, obj=None):
-        """deletes all tables fro database"""
-        if obj is not None:
-            self.__session.query(type(obj)
-                    ).filter(type(obj).id == obj.id).delete()
+        if obj:
+            self.__session.delete(obj)
 
     def reload(self):
         """creates table in db"""
