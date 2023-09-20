@@ -120,7 +120,7 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, args):
         """ Create an object of any class"""
         bad_attr = ("id", "created_at", "updated_at", "__class__")
-        name_to_match = r"(?p<name>(?:[a-zA-Z]|_)(?:[a-zA-Z]|\d|_)*)"
+        name_to_match = r'(?p<name>(?:[a-zA-Z]|_)(?:[a-zA-Z]|\d|_)*)'
         class_nam = ""
 
         matching_class = re.match(name_to_match, args)
@@ -132,11 +132,13 @@ class HBNBCommand(cmd.Cmd):
             params = params_send.split(" ")
             send_patten = r'(?p<t_str>"([^"]|\")*")'
 
-            float_pattern = r'(?p<t_int>[-+]?\d+)'
+            float_pattern = r'(?P<t_float>[-+]?\d+\.\d+)'
             int_pattern = r'(?p<t_int>[-+]?\d+)'
-            
-            param_pattern = '{}=({}|{}|{})'.format(name_to_match, send_patten,
-                    float_pattern, int_pattern)
+
+            param_pattern = '{}=({}|{}|{})'.format(
+                    name_to_match, send_patten,
+                    float_pattern, int_pattern
+                    )
 
             for param in params:
                 param_match = re.fullmatch(param_pattern, param)

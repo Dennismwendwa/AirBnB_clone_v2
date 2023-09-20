@@ -1,13 +1,10 @@
 #!/usr/bin/python3
 """ State Module for HBNB project """
-from models.base_model import BaseModel, Base
-from sqlalchemy import create_engine
+from models.base_model import Base
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, scoped_session
-
 from sqlalchemy import create_engine
-import os
-
+from os import getenv
 from models.user import User
 from models.state import State
 from models.city import City
@@ -28,7 +25,7 @@ classes = {
         }
 
 
-class DBStorage(BaseModel):
+class DBStorage:
     """ DBStorage class """
     __engine = None
     __session = None
@@ -37,22 +34,22 @@ class DBStorage(BaseModel):
         """creates new dbstorage instances"""
         self.__engine = create_engine(
                 'mysql+mysqldb://{}:{}@{}/{}'
-                .format(os.environ.get('HBNB_MYSQL_USER'),
-                        os.environ.get('HBNB_MYSQL_PWD'),
-                        os.environ.get('HBNB_MYSQL_HOST', 'localhost'),
-                        os.environ.get('HBNB_MYSQL_DB')),
+                .format(getenv('HBNB_MYSQL_USER'),
+                        getenv('HBNB_MYSQL_PWD'),
+                        getenv('HBNB_MYSQL_HOST', 'localhost'),
+                        getenv('HBNB_MYSQL_DB')),
                 pool_pre_ping=True
         )
 
-        if getenv('HBNB_ENV') = 'test':
+        if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
         """making query sets from the current database instances"""
         my_dict = {}
 
-        if cls is not None:
-            for k in classes.value():
+        if cls is None:
+            for k in classes.values():
                 objects = self.__session.query(k).all()
                 for f in objects:
                     key = f.__class__.__name__ + '.' + f.id
@@ -65,30 +62,33 @@ class DBStorage(BaseModel):
         return my_dict
 
     def new(self, obj):
-      """adds new object to database"""
-      if obj is not None:
-        try:
-          self.__session.add(obj)
-          self.__session.flush()
-          self.__session.reflesh(obj)
-      except Exception as e:
-        self.__session.rollback()
-        raise e
+        """adds new object to database"""
+        if obj is not None:
+            try:
+                self.__session.add(obj)
+                self.__session.flush()
+                self.__session.reflesh(obj)
+
+            except Exception as e:
+                self.__session.rollback()
+                raise e
 
     def save(self):
-      """commits chenges of current session"""
+        """commits chenges of current session"""
         self.__session.commit()
 
     def delete(self, obj=None):
-        if obj:
-            self.__session.delete(obj)
+        """deletes objects from the db"""
+        if obj is not None:
+            self.__session.query(type(obj)).filter(
+                    type(obj).id == obj.id).delete()
 
     def reload(self):
         """creates table in db"""
         Base.metadata.create_all(self.__engine)
         session_fact = sessionmaker(
                     bind=self.__engine, expire_on_commit=False)
-                
+
         self.__session = scoped_session(session_fact)()
 
     def close(self):
