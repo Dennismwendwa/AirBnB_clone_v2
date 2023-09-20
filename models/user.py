@@ -9,15 +9,18 @@ from sqlalchemy import Column, String
 
 class User(BaseModel, Base):
     """This class defines a user by various attributes"""
-    __tablename__'users'
+    __tablename__ = 'users'
 
     if which_storage == 'db':
         email = Column(String(128), nullable=False)
         password = Column(String(128), nullable=False)
-        first_name = Column(String(128), nullable=True))
-        last_name = Column(String(128), delete='delete-orphan')
-        places = reltionship('Place', cascade='all, delete-orphan', backref='user')
-        reviews = relationship('Review', backref'user', cascade='all, delete-orphan')
+        first_name = Column(String(128), nullable=True)
+        last_name = Column(String(128), nullable=True)
+        places = relationship('Place',
+                              cascade='all, delete-orphan, delete',
+                              backref='user')
+        reviews = relationship('Review', backref='user',
+                               cascade='all, delete, delete-orphan')
     else:
 
         email = ''

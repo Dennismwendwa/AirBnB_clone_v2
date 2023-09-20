@@ -2,7 +2,7 @@
 """ State Module for HBNB project """
 from models.base_model import BaseModel, Base
 from models import which_storage
-from sqlalchemy import String, column
+from sqlalchemy import String, Column
 
 
 class Amenity(BaseModel, Base):

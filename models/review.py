@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """ Review module for the HBNB project """
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.sql.schema import ForeignKey
 from models import which_storage
 
@@ -14,7 +14,7 @@ class Review(BaseModel, Base):
         place_id = Column(String(60), ForeignKey('place.id'), nullable=False)
         user_id = Column(String(60), ForeignKey('place.id'), nullable=False)
     else:
-        
+
         place_id = ""
         user_id = ""
         text = ""
