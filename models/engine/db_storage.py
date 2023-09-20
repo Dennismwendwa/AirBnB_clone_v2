@@ -3,7 +3,6 @@
 from models.base_model import BaseModel, Base
 from sqlalchemy import create_engine
 from sqlalchemy import Column, String, ForeignKey
-from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 from sqlalchemy import create_engine
@@ -16,6 +15,8 @@ from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
 
+if getenv('HBNB_TYPE_STORAGE') == 'db':
+    from models.place import place_amenity
 
 classes = {
         "User": User,
@@ -27,7 +28,7 @@ classes = {
         }
 
 
-class DBStorage:
+class DBStorage(BaseModel):
     """ DBStorage class """
     __engine = None
     __session = None
@@ -42,33 +43,40 @@ class DBStorage:
                         os.environ.get('HBNB_MYSQL_DB')),
                 pool_pre_ping=True
         )
-        if os.environ.get('HBNB_ENV') == 'test':
-            self.__engine.drop_all()
+
+        if getenv('HBNB_ENV') = 'test':
+            Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        from models import base_model
+        """making query sets from the current database instances"""
+        my_dict = {}
 
-        session = self.__session
-        objects = {}
-
-        if cls is None:
-            classes = [base_model.State,
-                       base_model.City,
-                       base_model.User,
-                       base_model.Amenity,
-                       base_model.Place,
-                       base_model.Review]
-            for cs in classes:
-                objects.update({obj.id: obj for obj in session.query(cl).all()})
+        if cls is not None:
+            for k in classes.value():
+                objects = self.__session.query(k).all()
+                for f in objects:
+                    key = f.__class__.__name__ + '.' + f.id
+                    my_dict[key] = f
         else:
-            objects.update({obj.id: obj for obj in session.query(cls).all()})
-
-        return objects
+            objects = self.__session.query(cls).all()
+            for t in objects:
+                key = t.__class__.__name__ + '.' + t.id
+                my_dict[key] = t
+        return my_dict
 
     def new(self, obj):
-        self.__session.add(obj)
+      """adds new object to database"""
+      if obj is not None:
+        try:
+          self.__session.add(obj)
+          self.__session.flush()
+          self.__session.reflesh(obj)
+      except Exception as e:
+        self.__session.rollback()
+        raise e
 
     def save(self):
+      """commits chenges of current session"""
         self.__session.commit()
 
     def delete(self, obj=None):
@@ -76,7 +84,13 @@ class DBStorage:
             self.__session.delete(obj)
 
     def reload(self):
-        session_factory = sessionmaker(
-                bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(session_factory)
-        self.__session = Session()
+        """creates table in db"""
+        Base.metadata.create_all(self.__engine)
+        session_fact = sessionmaker(
+                    bind=self.__engine, expire_on_commit=False)
+                
+        self.__session = scoped_session(session_fact)()
+
+    def close(self):
+        """classes class session"""
+        self.__session.close()
