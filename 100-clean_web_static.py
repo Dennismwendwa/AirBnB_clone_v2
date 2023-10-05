@@ -8,6 +8,7 @@ from fabric.api import local, run, put, runs_once, env
 env.hosts = ["54.173.2.214", "100.24.242.66"]
 env.user = "ubuntu"
 
+
 @runs_once
 def do_pack():
     """compressing the project"""
