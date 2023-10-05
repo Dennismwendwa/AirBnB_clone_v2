@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""deploying using fabric scrib"""
+"""Using fabric to do the deployement"""
 
 import os
 from datetime import datetime
@@ -8,7 +8,8 @@ from fabric.api import local, run, put, runs_once, env
 env.hosts = ["54.173.2.214", "100.24.242.66"]
 env.user = "ubuntu"
 
-def do_deploy():
+@runs_once
+def do_pack():
     """compressing the project"""
     if not os.path.isdir("versions"):
         os.mkdir("versions")
@@ -18,15 +19,13 @@ def do_deploy():
             current_time.year, current_time.month,
             current_time.day, current_time.hour,
             current_time.minute, current_time.second
-        )
+            )
     try:
         print("Packing web_static to {}".format(output))
         local("tar -cvzf {} web_static".format(output))
         archive_size = os.stat(output).st_size
         print("web_static packed: {} -> {} Bytes".format(output, archive_size))
-    except Exception as e:
-        print("Deploy1 failed")
-        print(e)
+    except Exception:
         output = None
 
     return output
@@ -58,8 +57,22 @@ def do_deploy(archive_path):
         print("New version deployed!")
         success = True
     except Exception as e:
-        print("deploy2 failed")
-        print(e)
-        success = False
+        print("Deployment failed:", str(e))
+        return False
 
-    return success
+
+def do_clean(number=0):
+    """
+    cleaning excess achives
+    """
+
+    files = local("ls -tr versions", capture=True)
+    number_of_files = int(number)
+    if number_of_files == 0:
+        number_of_files = 1
+
+    files = files.split("\n")
+    file_length = len(files)
+
+    for nu in range(0, file_length - number_of_files):
+        local("rm -rf versions/{}".format(files[nu]))
