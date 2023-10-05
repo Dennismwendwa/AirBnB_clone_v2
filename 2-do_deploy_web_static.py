@@ -6,7 +6,7 @@ from datetime import datetime
 from fabric.api import local, run, put, runs_once, env
 
 env.hosts = ["54.173.2.214", "100.24.242.66"]
-
+env.user = "ubuntu"
 
 def do_deploy():
     """compressing the project"""
