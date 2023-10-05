@@ -9,7 +9,7 @@ env.hosts = ["54.173.2.214", "100.24.242.66"]
 env.user = "ubuntu"
 
 @runs_once
-def do_deploy():
+def do_pack():
     """compressing the project"""
     if not os.path.isdir("versions"):
         os.mkdir("versions")
@@ -31,23 +31,22 @@ def do_deploy():
     return output
 
 
-
-def go_deploy(path_to_archive):
+def do_deploy(archive_path):
     """
     sending static file to server
 
     Arg: path_to_archive: this is the path to archive
     """
-    if not os.path.exists(path_to_archive):
+    if not os.path.exists(archive_path):
         return False
 
-    file_name = os.path.basename(path_to_archive)
+    file_name = os.path.basename(archive_path)
     folder_name = file_name.replace(".tgz", "")
     path_to_folder = "/data/web_static/releases/{}/".format(folder_name)
     success = False
 
     try:
-        put(path_to_archive, "/tmp/{}".format(file_name))
+        put(archive_path, "/tmp/{}".format(file_name))
         run("mkdir -p {}".format(path_to_folder))
         run("tar -xzf /tmp/{} -C {}".format(file_name, path_to_folder))
         run("rm -rf /tmp/{}".format(file_name))
@@ -57,5 +56,17 @@ def go_deploy(path_to_archive):
         run("ln -s {} /data/web_static/current".format(path_to_folder))
         print("New version deployed!")
         success = True
-    except Exception:
-        pass
+    except Exception as e:
+        print("Deployment failed:", str(e))
+        return False
+
+
+def deploy():
+    """
+    The product is now fully live
+    """
+    do_pack_deploy = do_pack()
+    if not do_pack_deploy:
+        return False
+    live = do_deploy(do_pack_deploy)
+    return live
