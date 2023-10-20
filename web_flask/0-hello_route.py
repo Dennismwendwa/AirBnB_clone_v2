@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+"""this is flask app"""
+
 from flask import Flask
 
 app = Flask(__name__)
