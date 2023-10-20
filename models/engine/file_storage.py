@@ -70,4 +70,3 @@ class FileStorage:
     def close(self):
         """relods objects"""
         self.reload()
-        

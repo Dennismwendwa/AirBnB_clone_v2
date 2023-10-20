@@ -23,6 +23,7 @@ classes = {
         "Review": Review,
         }
 
+
 class DBStorage:
     """ DBStorage class """
     __engine = None
@@ -43,10 +44,8 @@ class DBStorage:
                                            HBNB_MYSQL_DB
                                         ), pool_pre_ping=True)
 
-
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
-
 
     def all(self, cls=None):
         """making query sets from the current database instances"""
