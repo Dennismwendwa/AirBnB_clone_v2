@@ -1,7 +1,8 @@
-
+7-dump.sql
 file.json
 env/
 __pycache__/
 models/__pycache__/
 models/engine/__pycache__/
 tests/__pycache__/
+web_flask/__pycache__/
