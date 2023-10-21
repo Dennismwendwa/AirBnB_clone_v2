@@ -7,9 +7,9 @@ from models.state import State
 
 @app.route("/states_list", strict_slashes=False)
 def all_states():
-   states = storage.all(State)
-   states = sorted(states.values(), key=lambda s: s.name)
-   return render_template("7-states_list.html", states=states)
+    states = storage.all(State)
+    states = sorted(states.values(), key=lambda s: s.name)
+    return render_template("7-states_list.html", states=states)
 
 
 @app.teardown_appcontext
@@ -19,4 +19,4 @@ def teardown(exception):
 
 
 if __name__ == "__main__":
-   app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000)
