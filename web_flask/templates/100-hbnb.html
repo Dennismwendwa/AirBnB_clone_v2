@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>AirBnB clone</title>
+
+		<link rel="shortcut icon" href="..images/icon.ico" >
+
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/4-common.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/3-header.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/3-footer.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/6-filters.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/8-places.css') }}">
+	</head>
+    <body>
+		<header>
+			<div id="header_logo"></div>
+		</header>
+		<div class="container">
+			<section class="filters">
+				<button>Search</button>
+				<div class="locations">
+					<h3>States</h3>
+					<h4>&nbsp;</h4>
+					<div class="popover">
+						<ul>
+							{% for state in states.values()|sort(attribute="name") %}
+							<li>
+								<strong>{{state.name}}</strong>
+								<ul>
+									{% for city in state.cities|sort(attribute="name") %}
+									<li>{{city.name}}</li>
+									{% endfor %}
+								</ul>
+							</li>
+							{% endfor %}
+						</ul>
+					</div>
+				</div>
+				<div class="amenities">
+					<h3>Amenities</h3>
+					<h4>&nbsp;</h4>
+					<div class="popover">
+						{% for amenity in amenities.values()|sort(attribute="name") %}
+						<li>{{amenity.name}}</li>
+						{% endfor %}
+					</div>
+				</div>
+
+			</section>
+			<section class="places">
+				<h1>Places</h1>
+				{% for place in places.values()|sort(attribute="name") %}
+				<article>
+					<div class="headline">
+						<h2>{{place.name}}</h2>
+						<div class="price_by_night">$#80;{{place.price-by-night}}</div>
+					</div>
+					<div class="information">
+						<div class="max_guest">
+							<div class="guest_icon"></div>
+							<p>{{place.max_guest}} Guests</p>
+						</div>
+						<div class="number_rooms">
+							<div class="bed_icon"></div>
+							<p>{{place.number_rooms}} Bedroom</p>
+						</div>
+						 <div class="number_bathrooms">
+							<div class="bath_icon"></div>
+							<p>{{place.number_bathrooms}} Bathroom</p>
+						</div>
+					</div>
+					<div class="user">
+						<b>Owner</b>: {{place.user.first_name}} {{place.user.last_name}}
+					</div>
+					<div class="description">
+                        {{place.description|safe}}
+                    </div>
+					<div class="amenities">
+						<h2>Amenities</h2>
+						{% for amenity in place.amenities|sort(attribute="name") %}
+						<ul>
+							<li>
+								<p>{{amenity.name}}</p>
+							</li>
+						</ul>
+						{% endfor %}
+					</div>
+					<div class="reviews">
+						<h2>{{place.reviews.__len__() }} Reviews</h2>
+						{% for review in place.reviews %}
+						<h3>
+							From {{ review.user.first_name }} the {{review.created_at.date().__str__() }}
+						</h3>
+						<ul>
+							<li>
+								<p>{{review.text|safe}}</p>
+							</li>
+						</ul>
+						{% endfor %}
+					</div>
+				</article>
+				{% endfor %}
+			</section>
+		</div>
+		<footer>
+			<p>Holberton School</p>
+		</footer>
+	</body>
+</html>
